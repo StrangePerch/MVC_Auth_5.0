@@ -1,0 +1,60 @@
+﻿@using MVC_Auth_5._0.Data
+@using MVC_Auth_5._0.Models
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
+@using System.Text.Json
+@inject NavigationManager Navigator
+@inject ApplicationDbContext Context
+<h3>Codes</h3>
+
+@{
+    if (_book?.Codes != null)
+    {
+        <ul>
+          @foreach (var bookCode in _book.Codes)
+          {
+              <li>
+                  <div>@bookCode <button class="btn btn-danger" @onclick="@(() => RemoveCode(bookCode))" type="button">Remove</button></div>
+              </li>
+          }  
+        </ul>
+    }
+}
+
+<input type="text" @bind="@_newCode">
+<button type="button" class="btn btn-primary" @onclick="@(() => AddCode(@_newCode))" >Add</button>
+<input hidden id="Codes" name="Codes" type="text" value="@JsonSerializer.Serialize(_book.Codes, null)"/>
+
+@code {
+    private string _newCode;
+    
+    private Book _book;
+    private static Guid GetIdFromUrl(string url)
+    {
+        var uri = new Uri(url);
+        var path = uri.LocalPath;
+        var slashIndex = path.LastIndexOf('/');
+        var id = path[(slashIndex + 1)..];
+        return Guid.Parse(id);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var bookId = GetIdFromUrl(Navigator.Uri);
+        _book = await Context.Books.FindAsync(bookId);
+    }
+
+    private async Task RemoveCode(string code)
+    {
+        _book.Codes.Remove(code);
+        await Context.SaveChangesAsync();
+    }
+    
+    private async Task AddCode(string code)
+    {
+        _book.Codes.Add(code);
+        Context.Entry(_book).State = EntityState.Modified;
+        await Context.SaveChangesAsync();
+        _newCode = string.Empty;
+    }
+}

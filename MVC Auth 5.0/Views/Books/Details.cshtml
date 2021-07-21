@@ -1,0 +1,67 @@
+@using Microsoft.Extensions.Hosting
+@model Book
+
+@{
+    ViewData["Title"] = "Details";
+    var request = Context.Request;
+    string BuildAuthorUrl(Guid id)
+        => new UriBuilder(request.Scheme,
+            request.Host.Host,
+            request.Host.Port.GetValueOrDefault(),
+            Url.Content($"~/Authors/Details/{id}")).Uri.AbsoluteUri;
+
+}
+
+@section MetaTags
+{
+    <meta lang="en"/>
+    <open-graph-books-book title="@Model.Title"
+                           isbn="9780735619579"
+                           language="en"
+                           author-urls="@Model.Authors.Select(a => BuildAuthorUrl(a.Id))"
+                           main-image="@(new OpenGraphImage(Model.CoverImageUrl))"
+                           release-date="@Model.DatePublished" />
+
+    <meta property="og:type" content="books.book">
+    <open-graph-website title="Book - '@Model.Title'"/>
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Book</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DatePublished)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DatePublished)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Codes)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Codes)
+        </dd>
+        <dd class = "col-sm-10">
+        @Html.Raw(string.Join("<br/>", Model.Codes?.Select(Html.Encode) ?? Array.Empty<string>()))
+        <dd/>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
